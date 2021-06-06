@@ -5,6 +5,7 @@ state("Bioshock2")
 	byte	lvl			:	0x10B8010, 0x258;
 	byte	area		:	0xF39948;
 	bool	endMain		:	0x10CC7E8, 0x48, 0x578, 0x70, 0x20;
+	int		startDLC	:	0x006EFDC, 0xB8;
 	bool	endDLC		:	0x0DDDE88, 0xC, 0xC, 0x0, 0x28, 0x14, 0x2A0;
 }
 
@@ -28,7 +29,7 @@ startup
 	{
 		if(item == "Fontaine Futuristics 1"){
 			settings.Add(item, false, null,"Fontaine Futuristics");
-			settings.SetToolTip(item, "Split when reaching Fontaine's Plasmid Research and Development (the part with huge tank)");
+			settings.SetToolTip(item, "Split when entering water section between main FF and Fontaine's Plasmid Research and Development (the part with huge tank)");
 		}
 		else settings.Add(item, true);
 	}
@@ -38,7 +39,14 @@ init{timer.IsGameTimePaused=false; vars.prevLvl=0; vars.prevArea=0;}
 
 exit{timer.IsGameTimePaused=true;}
 
-start{vars.prevLvl=0; vars.prevArea=0; return !current.isLoading && old.isLoading && ((!vars.md && current.lvl == 7) || (vars.md && current.lvl == 2));}
+start{
+	vars.prevLvl=0;
+	vars.prevArea=0;
+	if(vars.md)
+		return current.lvl == 2 && current.startDLC == 1 && old.startDLC != 1;
+	else
+		return current.lvl == 7 && !current.isLoading && old.isLoading;
+}
 
 isLoading{return current.isSaving || current.isLoading;}
 
@@ -46,10 +54,10 @@ split
 {
 	if(current.isLoading && current.lvl != old.lvl){
 		if(current.lvl == 0 && old.lvl != 0) vars.prevLvl=old.lvl;
-		print("[ASL] vars.prevLvl: "+vars.prevLvl+" | current.lvl: "+current.lvl);
+		//print("[ASL] vars.prevLvl: "+vars.prevLvl+" | current.lvl: "+current.lvl);
 		if(vars.md){
 			if(current.area == 0 && old.area != 0) vars.prevArea=old.area;
-			print("[ASL] vars.prevArea: "+vars.prevArea+" | current.area: "+current.area);
+			//print("[ASL] vars.prevArea: "+vars.prevArea+" | current.area: "+current.area);
 				 if(vars.prevLvl == 2 	&& current.lvl == 19)	{vars.prevLvl=current.lvl;	return settings["Minerva's Den"];}
 		}
 		else{
@@ -64,8 +72,11 @@ split
 			else if(vars.prevLvl == 3 	&& current.lvl == 39)											{vars.prevLvl=current.lvl;	return settings["Outer Persephone"];}
 		}
 	}
-	else if(!vars.md && current.lvl==27 && current.area == 53 && old.area == 54)													return settings["Fontaine Futuristics 1"];
-	else if(!vars.md && current.lvl==39 && current.endMain && !old.endMain)															return settings["Inner Persephone"];
-	else if(vars.md  && current.lvl== 0 && vars.prevLvl == 19 && vars.prevArea== 4 && current.area== 2){vars.prevLvl=current.lvl;	return settings["Operations"];}
+	// Split on leaving airlock from main FF and entering water section
+	else if(!vars.md && current.lvl==27 && current.area == 49 && old.area == 50)													return settings["Fontaine Futuristics 1"];
+	// Split on entering final elevator
+	else if(!vars.md && current.lvl==39 && current.area == 63 && current.endMain && !old.endMain)									return settings["Inner Persephone"];
+	// Minerva's Den splits
+	else if(vars.md  && current.lvl== 0 && vars.prevLvl == 19 && vars.prevArea== 4 && current.area== 2) {vars.prevLvl=current.lvl;	return settings["Operations"];}
 	else if(vars.md  && current.lvl== 0 && old.lvl== 0 && current.area== 22 && current.endDLC && !old.endDLC)						return settings["The Thinker"];
 }
