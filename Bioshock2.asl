@@ -65,7 +65,6 @@ split
 			//if(current.area == 0 && old.area != 0) vars.prevArea=old.area;
 			//print("[ASL] vars.prevArea: "+vars.prevArea+" | current.area: "+current.area);
 				 if(vars.prevLvl == 2 	&& current.lvl == 19)	{vars.prevLvl=current.lvl;	return settings["Minerva's Den"];}
-			else if(vars.prevLvl == 19 	&& current.lvl == 0)	{vars.prevLvl=current.lvl;	return settings["Operations"];}
 		}
 		else{
 				 if(current.lvl == 0) return;
@@ -84,7 +83,7 @@ split
 	// Split on entering final elevator
 	else if(!vars.md && current.lvl==39 && current.area == 63 && current.endMain && !old.endMain)									return settings["Inner Persephone"];
 	// Minerva's Den splits
-	//else if(vars.md  && current.lvl== 0 && vars.prevLvl == 19 && vars.prevArea== 4 && current.area== 2) {vars.prevLvl=current.lvl;	return settings["Operations"];}
+	else if(vars.md  && current.lvl== 0 && vars.prevLvl == 19 && vars.prevArea== 4 && current.area== 2 && current.isLoading) {vars.prevLvl=current.lvl;	return settings["Operations"];}
 	else if(vars.md  && current.lvl== 0 && old.lvl== 0 && current.area== 22 && current.endDLC && !old.endDLC)						return settings["The Thinker"];
 }
 
