@@ -34,9 +34,7 @@ startup
 			settings.Add(item, true);
 		else if(i == 8){
 			settings.Add(item, false, null, vars.lvls[7]);
-			settings.SetToolTip(item, "Split when entering water section between FF parts");
-			settings.Add("ffalt", false, "Split when reaching FF pt2 instead of leaving FF pt1", item);
-			settings.SetToolTip("ffalt", "Splits when entering the hallway with the ADAM plants instead of leaving the upper airlock");
+			settings.SetToolTip(item, "Splits when entering the hallway with the ADAM plants");
 		}
 		else if(i > 11)
 			settings.Add(item, true, null, vars.lvls[11]);
@@ -95,15 +93,9 @@ split
 				{vars.prevLvl=current.lvl;	return settings["Outer Persephone"];}
 		}
 	}
-	else if(!vars.md && current.lvl==27)
-	{
-		// Split on entering FF part 2 from lower airlock
-		if(current.area == 53 && old.area == 54)
-			return settings["Fontaine Futuristics 1"] && settings["ffalt"];
-		// Split on entering water section from upper airlock
-		else if(current.area == 49 && old.area == 50)
-			return settings["Fontaine Futuristics 1"] && !settings["ffalt"];
-	}
+	// Split on leaving FF lower airlock
+	else if(!vars.md && current.lvl==27 && current.area == 53 && old.area == 54)
+			return settings["Fontaine Futuristics 1"]
 	// Split on entering final elevator
 	else if(!vars.md && current.lvl==39 && current.area == 63 && current.endMain && !old.endMain)
 			return settings["Inner Persephone"];
