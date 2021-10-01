@@ -95,7 +95,7 @@ split
 	}
 	// Split on leaving FF lower airlock
 	else if(!vars.md && current.lvl==27 && current.area == 53 && old.area == 54)
-			return settings["Fontaine Futuristics 1"]
+			return settings["Fontaine Futuristics 1"];
 	// Split on entering final elevator
 	else if(!vars.md && current.lvl==39 && current.area == 63 && current.endMain && !old.endMain)
 			return settings["Inner Persephone"];
