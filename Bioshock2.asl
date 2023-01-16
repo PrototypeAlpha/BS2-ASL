@@ -1,13 +1,10 @@
 state("Bioshock2")
 {
-	bool isSaving  : 0xF42EE8;
-	bool isLoading : 0x10B8010, 0x278;
-	byte lvl       : 0x10B8010, 0x258;
-	byte area      : 0xF39948;
-	bool endMain   : 0x10CC7E8, 0x48, 0x578, 0x70, 0x20;
-	int  startDLC  : 0x006EFDC, 0xB8;
-	int  startDLC2 : 0x04959A0, 0x140;
-	bool endDLC    : 0x0DDDE88, 0xC, 0xC, 0x0, 0x28, 0x14, 0x2A0;
+	bool	isSaving	: 0xF42EE8;
+	bool	isLoading	: 0x10B8010, 0x278;
+	byte	lvl			: 0x10B8010, 0x258;
+	byte	area		: 0xF39948;
+	short	posX		: 0xF39966;
 }
 
 startup 
@@ -43,7 +40,38 @@ startup
 	}
 }
 
-init{timer.IsGameTimePaused=false; vars.prevLvl=0; vars.prevArea=0;}
+init
+{
+	timer.IsGameTimePaused=false;
+	vars.prevLvl=0;
+	vars.prevArea=0;
+	
+	byte[] exeBytes = new byte[0];
+    using (var md5 = System.Security.Cryptography.MD5.Create())
+    {
+        using (var exe = File.Open(modules.First().FileName, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+        {
+            exeBytes = md5.ComputeHash(exe); 
+        }
+    }
+    var hash = exeBytes.Select(x => x.ToString("X2")).Aggregate((a, b) => a + b);
+	
+	print("Hash = "+hash);
+	
+	switch(hash)
+    {
+		case "7BE7454335543349786D1CDF7D4EB87D":
+			version = "Steam 5.0.019";
+			break;
+		case "01182B9B2FA7B9232D3862D2E6F1E05A":
+			version = "GOG 5.0.019";
+			break;
+		default:
+			version = "Unknown";
+			break;
+	}
+	print("Version = "+version);
+}
 
 exit{timer.IsGameTimePaused=true;}
 
@@ -51,14 +79,9 @@ start{
 	vars.prevLvl=0;
 	vars.prevArea=0;
 	if(vars.md && current.lvl == 2)
-	{
-		if(current.area == 46)
-			return !current.isLoading && old.isLoading;
-		else
-			return ( (current.startDLC == 1 && old.startDLC != 1) || (current.startDLC2 == 1 && old.startDLC2 != 1) );
-	}
+		return current.area == 47 && current.posX < -15054 && old.posX == -15054;
 	else
-		return current.lvl == 7 && !current.isLoading && old.isLoading;
+		return current.lvl == 7 && ((current.area == 35 && old.area == 40) || (!current.isLoading && old.isLoading));
 }
 
 isLoading{return current.isSaving || current.isLoading;}
@@ -97,14 +120,14 @@ split
 	else if(!vars.md && current.lvl==27 && current.area == 53 && old.area == 54)
 			return settings["Fontaine Futuristics 1"];
 	// Split on entering final elevator
-	else if(!vars.md && current.lvl==39 && current.area == 63 && current.endMain && !old.endMain)
+	else if(!vars.md && current.lvl==39 && current.area == 63 && old.posX < 17808 && current.posX > 17807)
 			return settings["Inner Persephone"];
 	// Minerva's Den splits
 	else if(vars.md  && current.lvl== 0)
 	{
 		if(vars.prevLvl == 19 && vars.prevArea== 4 && current.area== 2 && current.isLoading)
 			{vars.prevLvl=current.lvl;	return settings["Operations"];}
-		else if(old.lvl== 0 && current.area== 22 && current.endDLC && !old.endDLC)
+		else if(old.lvl== 0 && current.area== 22 && old.posX < 17675 && current.posX > 17674)
 			return settings["The Thinker"];
 	}
 }
