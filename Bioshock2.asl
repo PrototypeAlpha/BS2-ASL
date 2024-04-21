@@ -9,10 +9,7 @@ state("Bioshock2")
 
 startup 
 {
-	vars.md=false;
-	var gameName = timer.Run.GameName.ToLower();
-	if(gameName.Contains("minerva")||gameName.Contains("md")||gameName.Contains("dlc"))
-		vars.md=true;
+	vars.md = false;
 	
 	vars.lvls=new string[]{
 	"Main Game",
@@ -42,7 +39,9 @@ startup
 
 init
 {
-	timer.IsGameTimePaused=false;
+	vars.gameName = timer.Run.GameName.ToLower();
+	vars.md = (vars.gameName.Contains("minerva")||vars.gameName.Contains("md")||vars.gameName.Contains("dlc")) ? true : false;
+	
 	vars.prevLvl=0;
 	vars.prevArea=0;
 	
@@ -71,6 +70,8 @@ init
 			break;
 	}
 	print("Version = "+version);
+	
+	timer.IsGameTimePaused=false;
 }
 
 exit{timer.IsGameTimePaused=true;}
@@ -79,7 +80,7 @@ start{
 	vars.prevLvl=0;
 	vars.prevArea=0;
 	if(vars.md && current.lvl == 2)
-		return current.area == 47 && current.posX < -15054 && old.posX == -15054;
+		return current.area == 46 && ((current.posX < -15054 && old.posX == -15054) || (!current.isLoading && old.isLoading));
 	else
 		return current.lvl == 7 && ((current.area == 35 && old.area == 40) || (!current.isLoading && old.isLoading));
 }
@@ -140,6 +141,7 @@ update
 		if(current.area == 0 && old.area != 0) vars.prevArea=old.area;
 	}
 	
+	//if(current.posX != old.posX) print("[ASL] posX: "+old.posX+" -> "+current.posX);
 	//if(current.lvl != old.lvl) print("[ASL] lvl: "+old.lvl+" -> "+current.lvl);
 	//if(current.area != old.area) print("[ASL] area: "+old.area+" -> "+current.area);
 }
